@@ -1,0 +1,3 @@
+Par rapport à la rotation, le z de l'environnement il est vers le haut, mais celui de la caméra est orienté en fonction de la vision. 
+
+Ici, l'axe Z est aligné avec l'axe z de l'envirionnement.

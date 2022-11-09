@@ -1,0 +1,238 @@
+<html>
+	<head>
+		<title>Transept de la cathédrale d'Amiens</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	</head>
+
+	<body>
+		<script src="../Libs/three.min.js"></script>
+		<script src="../Libs/OBJLoader.js"></script>
+
+		<script>
+			var container; 
+            
+			var camera, scene, renderer;
+            var dax=0.002;
+
+			var light;
+
+			function onWindowResize() {
+              camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+			}
+
+			function Init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				camera = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 1, 100 );
+                camera.rotation.z=0;
+                camera.rotation.x=1.60;
+                camera.rotation.y=0;
+                camera.position.z=-20; //Pour reculer
+
+				// scene
+				scene = new THREE.Scene();
+
+				var ambient = new THREE.AmbientLight( 0xffffff );
+				scene.add( ambient );
+
+				// texture
+
+				var manager = new THREE.LoadingManager();
+				manager.onProgress = function ( item, loaded, total ) {
+					console.log( item, loaded, total );
+				};
+
+				light = new THREE.PointLight( 0xffffff, 5, 15 , 5);
+				light.position.set( 0, -20, -20 );
+				scene.add( light );
+
+				
+
+
+				var texture = new THREE.Texture();
+
+				var loader = new THREE.ImageLoader( manager );
+				loader.load( '../TranseptSud/TranseptTexture4096.jpg', function ( image ) {
+					texture.image = image;
+					texture.needsUpdate = true;
+				} );
+
+				// Chargement du modèle
+				var loader = new THREE.OBJLoader( manager );
+				loader.load( '../TranseptSud/transeptSudBox.obj', function ( object ) {
+					object.traverse( function ( child ) {
+						if ( child instanceof THREE.Mesh ) {
+							child.material.map = texture;
+						}
+					} );
+					scene.add( object );
+				} );
+              renderer = new THREE.WebGLRenderer();
+              renderer.setSize( window.innerWidth, window.innerHeight );
+              container.appendChild( renderer.domElement );
+              window.addEventListener( 'resize', onWindowResize, false );
+
+				//DEPLACEMENT DANS LA CATHEDRALE
+
+				MouvementJoueur()
+
+			}
+			function Afficher() {
+                renderer.render(scene,camera);
+			}
+			function Animer() {
+				requestAnimationFrame(Animer);
+				Afficher();
+			}
+
+           Init();
+           Animer();
+
+
+		   var alt_enfonce = false;
+
+		   function MouvementJoueur() {
+				window.addEventListener("keydown", event => {
+					
+
+					/**
+					* ROTATION A GAUCHE
+					*/
+					if (event.isComposing || event.keyCode === 37 && !alt_enfonce) {
+						console.log("Rotation à gauche");
+						camera.rotation.y += 0.1;
+						console.log("POSITION DE X :" + camera.position.x);
+						console.log("POSITION DE Y :" + camera.position.y);
+						console.log("POSITION DE Z :" + camera.position.z);
+						light.position.set( camera.position.x, camera.position.y, camera.position.z);
+						return;
+					}
+
+					/**
+					* ROTATION A DROITE
+					*/
+					if (event.isComposing || event.keyCode === 39  && !alt_enfonce) {
+						console.log("Rotation à droite");
+						camera.rotation.y += -0.1;
+						console.log("POSITION DE X :" + camera.position.x);
+						console.log("POSITION DE Y :" + camera.position.y);
+						console.log("POSITION DE Z :" + camera.position.z);
+						light.position.set( camera.position.x, camera.position.y, camera.position.z );
+						return;
+					}
+
+					/**
+					* AVANCER
+					*/
+					if (event.isComposing || event.keyCode === 38 && camera.position.z < -19.708004776987096 && camera.position.z > -20.291742691024055 && camera.position.x > -3.9899799464162187 && camera.position.x < 3.998294412166021) {
+						console.log("j'avance")
+						camera.translateZ(-1);
+						console.log("POSITION DE X :" + camera.position.x);
+						console.log("POSITION DE Y :" + camera.position.y);
+						console.log("POSITION DE Z :" + camera.position.z);
+						light.position.set( camera.position.x, camera.position.y, camera.position.z );
+
+
+						return;
+					}
+					
+					/**
+					* RECULER
+					*/
+					if (event.isComposing || event.keyCode === 40 && camera.position.z < -19.678805254685805 && camera.position.z > -20.317980387808518 && camera.position.x > -4.987474933020273 && camera.position.x < 4.997868015207526) {
+						console.log("je recule")
+						camera.translateZ(1);
+						console.log("POSITION DE X :" + camera.position.x);
+						console.log("POSITION DE Y :" + camera.position.y);
+						console.log("POSITION DE Z :" + camera.position.z);
+						light.position.set( camera.position.x, camera.position.y, camera.position.z );
+
+						return;
+					}
+
+
+					/**
+					* TRANSLATER A GAUCHE
+					*/
+					if (event.isComposing || event.keyCode === 37 && alt_enfonce && camera.position.z < -19.678805254685805 && camera.position.z > -20.317980387808518 && camera.position.x > -4.987474933020273 && camera.position.x < 4.997868015207526) {
+						console.log("je translate à gauche")
+						camera.translateX(-1);
+						//emplacement_camera += 1;
+						console.log("POSITION DE X :" + camera.position.x);
+						console.log("POSITION DE Y :" + camera.position.y);
+						console.log("POSITION DE Z :" + camera.position.z);
+						alt_enfonce = false;
+						light.position.set( camera.position.x, camera.position.y, camera.position.z );
+
+						return;
+					}
+
+					/**
+					* TRANSLATER A DROITE
+					*/
+					if (event.isComposing || event.keyCode === 39 && alt_enfonce && camera.position.z < -19.678805254685805 && camera.position.z > -20.317980387808518 && camera.position.x > -4.987474933020273 && camera.position.x < 4.997868015207526) {
+						console.log("je translate à droite")
+						camera.translateX(1);
+						//emplacement_camera += 1;
+						console.log("POSITION DE X :" + camera.position.x);
+						console.log("POSITION DE Y :" + camera.position.y);
+						console.log("POSITION DE Z :" + camera.position.z);
+						alt_enfonce = false;
+						light.position.set( camera.position.x, camera.position.y, camera.position.z );
+
+						return;
+					}
+					
+					/**
+					* DETECTER SI ALT EST ENFONCE
+					*/
+					if (event.altKey) {
+						console.log("ALT ENFONCE");
+						alt_enfonce = true;
+
+					}
+
+					//AFFICHER INDICES
+					if (camera.position.y > 9) {
+						var text2 = document.createElement('div');
+						text2.style.position = 'absolute';
+						//text2.style.zIndex = 1;    // if you still don't see the label, try uncommenting this
+						text2.style.width = 100;
+						text2.style.height = 100;
+						text2.style.backgroundColor = "red";
+						text2.innerHTML = "INDICE : Regarde derrière toi";
+						text2.style.top = 200 + 'px';
+						text2.style.left = 200 + 'px';
+						document.body.appendChild(text2);
+
+					}
+
+									
+					if (camera.position.y < -8) {
+						var text2 = document.createElement('div');
+						text2.style.position = 'absolute';
+						//text2.style.zIndex = 1;    // if you still don't see the label, try uncommenting this
+						text2.style.width = 100;
+						text2.style.height = 100;
+						text2.style.backgroundColor = "yellow";
+						text2.innerHTML = "INDICE : Creuse un trou";
+						text2.style.top = 200 + 'px';
+						text2.style.left = 200 + 'px';
+						document.body.appendChild(text2);
+
+					}
+
+
+					});
+		   }
+		   
+	   
+		</script>
+
+	</body>
+</html>
